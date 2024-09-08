@@ -4,7 +4,8 @@ import { insertUserSchema } from "../db/schema";
 import { db } from "../db/index";
 import * as schema from "../db/schema";
 import { eq } from "drizzle-orm";
-import { decode, sign, verify } from "hono/jwt";
+import { sign } from "hono/jwt";
+import bcrypt from "bcrypt";
 
 export const userRouter = new Hono<{
   Bindings: {
@@ -17,6 +18,7 @@ const signupSchema = insertUserSchema.omit({
 });
 userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
   const data = c.req.valid("json");
+  const hashedpassword = await bcrypt.hash(data.password, 10);
   try {
     const existingUser = await db
       .select()
@@ -37,7 +39,7 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
   try {
     const createUser = await db
       .insert(schema.users)
-      .values({ name: data.name, email: data.email, password: data.password })
+      .values({ name: data.name, email: data.email, password: hashedpassword })
       .returning();
     if (!createUser) {
       return c.json(
