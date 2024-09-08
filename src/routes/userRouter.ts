@@ -47,6 +47,7 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
       );
     }
     const token = await sign(createUser[0], process.env.JWT_SECRET || "");
+    localStorage.setItem("Bearer", token);
     return c.json({
       msg: token,
     });
@@ -76,6 +77,7 @@ userRouter.post("/signin", zValidator("json", signinSchema), async (c) => {
     }
     if (await compare(data.password, existingUser[0].password)) {
       const token = await sign(existingUser[0], process.env.JWT_SECRET || "");
+      localStorage.setItem("token", token);
       return c.json({
         msg: token,
       });
