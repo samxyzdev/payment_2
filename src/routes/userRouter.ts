@@ -4,21 +4,24 @@ import { insertUserSchema } from "../db/schema";
 import { db } from "../db/index";
 import * as schema from "../db/schema";
 import { eq } from "drizzle-orm";
+import { decode, sign, verify } from "hono/jwt";
 
-export const userRouter = new Hono();
+export const userRouter = new Hono<{
+  Bindings: {
+    JWT_SECRET: string;
+  };
+}>();
 
 const signupSchema = insertUserSchema.omit({
   id: true,
 });
 userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
-  const validate = c.req.valid("json");
-  const data = await c.req.json();
+  const data = c.req.valid("json");
   try {
     const existingUser = await db
       .select()
       .from(schema.users)
       .where(eq(schema.users.email, data.email));
-    console.log(existingUser);
 
     if (existingUser.length > 0) {
       return c.json(
@@ -31,11 +34,26 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
   } catch (e) {
     console.log(e);
   }
-  const createUser = await db
-    .insert(schema.users)
-    .values({ name: data.name, email: data.email, password: data.password })
-    .returning();
-  return c.text("signuproute");
+  try {
+    const createUser = await db
+      .insert(schema.users)
+      .values({ name: data.name, email: data.email, password: data.password })
+      .returning();
+    if (!createUser) {
+      return c.json(
+        {
+          msg: "There was some problem",
+        },
+        200
+      );
+    }
+    const token = sign(createUser[0], c.env.JWT_SECRET);
+    return c.json({
+      msg: token,
+    });
+  } catch (e) {
+    console.log(e);
+  }
 });
 
 userRouter.post("/signin", async (c) => {
