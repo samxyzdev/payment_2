@@ -23,6 +23,10 @@ export const users = pgTable(
     name: varchar("name", { length: 256 }).notNull(),
     email: varchar("email", { length: 256 }).unique().notNull(),
     password: varchar("password", { length: 256 }).notNull(),
+    createdAt: timestamp("createdAt", {
+      precision: 6,
+      withTimezone: true,
+    }).defaultNow(),
   },
   (users) => ({
     nameIdx: index("name_idx").on(users.email),
@@ -33,6 +37,10 @@ export const balance = pgTable("balance", {
   id: serial("id").primaryKey(),
   amount: integer("amount"),
   locked: integer("locked"),
+  createdAt: timestamp("createdAt", {
+    precision: 6,
+    withTimezone: true,
+  }).defaultNow(),
   userId: integer("user_id").references(() => users.id),
 });
 
@@ -43,6 +51,7 @@ export const onRampTransaction = pgTable("on_ramp_transaction", {
   provider: varchar("provider", { length: 256 }),
   amount: integer("amount"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  userId: integer("user_id").references(() => users.id),
 });
 
 export const p2pTransfer = pgTable("p2pTransfer", {
