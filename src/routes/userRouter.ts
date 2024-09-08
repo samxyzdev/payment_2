@@ -75,7 +75,7 @@ userRouter.post("/signin", zValidator("json", signinSchema), async (c) => {
       );
     }
     if (await compare(data.password, existingUser[0].password)) {
-      const token = await sign(existingUser[0], c.env.JWT_SECRET);
+      const token = await sign(existingUser[0], process.env.JWT_SECRET || "");
       return c.json({
         msg: token,
       });
