@@ -35,7 +35,7 @@ export const users = pgTable(
 
 export const balance = pgTable("balance", {
   id: serial("id").primaryKey(),
-  amount: integer("amount"),
+  amount: integer("amount").default(0),
   locked: integer("locked"),
   createdAt: timestamp("createdAt", {
     precision: 6,
