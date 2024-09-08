@@ -90,12 +90,17 @@ const updateSchema = insertUserSchema.omit({
   password: true,
 });
 userRouter.post("/update", zValidator("json", updateSchema), async (c) => {
+  console.log(1);
   const data = c.req.valid("json");
+  console.log(data);
+  console.log(2);
   try {
     const existingUser = await db
       .select()
       .from(schema.users)
       .where(eq(schema.users.email, data.email));
+    console.log(existingUser);
+    console.log(3);
     if (!existingUser.length) {
       return c.json(
         {
@@ -104,13 +109,18 @@ userRouter.post("/update", zValidator("json", updateSchema), async (c) => {
         403
       );
     }
+    console.log(4);
     const updateUser = await db
       .update(schema.users)
       .set({ name: data.name })
-      .where(eq(schema.users, existingUser[0].name));
+      .where(eq(schema.users.name, existingUser[0].name))
+      .returning({ updatedName: schema.users.name });
+
+    console.log(updateSchema);
+    console.log(5);
     return c.json(
       {
-        msg: `User name is updated with ${updateUser}`,
+        msg: `User name is updated with ${updateUser[0].updatedName}`,
       },
       200
     );
@@ -123,7 +133,7 @@ const deleteSchema = insertUserSchema.omit({
   id: true,
   name: true,
 });
-userRouter.post("/update", zValidator("json", deleteSchema), async (c) => {
+userRouter.post("/delete", zValidator("json", deleteSchema), async (c) => {
   const data = c.req.valid("json");
   try {
     const existingUser = await db
