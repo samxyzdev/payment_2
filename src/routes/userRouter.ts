@@ -84,3 +84,75 @@ userRouter.post("/signin", zValidator("json", signinSchema), async (c) => {
     console.log(e);
   }
 });
+
+const updateSchema = insertUserSchema.omit({
+  id: true,
+  password: true,
+});
+userRouter.post("/update", zValidator("json", updateSchema), async (c) => {
+  const data = c.req.valid("json");
+  try {
+    const existingUser = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.email, data.email));
+    if (!existingUser.length) {
+      return c.json(
+        {
+          msg: "User doesn't exist please create new one",
+        },
+        403
+      );
+    }
+    const updateUser = await db
+      .update(schema.users)
+      .set({ name: data.name })
+      .where(eq(schema.users, existingUser[0].name));
+    return c.json(
+      {
+        msg: `User name is updated with ${updateUser}`,
+      },
+      200
+    );
+  } catch (e) {
+    console.log(e);
+  }
+});
+
+const deleteSchema = insertUserSchema.omit({
+  id: true,
+  name: true,
+});
+userRouter.post("/update", zValidator("json", deleteSchema), async (c) => {
+  const data = c.req.valid("json");
+  try {
+    const existingUser = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.email, data.email));
+    if (!existingUser.length) {
+      return c.json(
+        {
+          msg: "User doesn't exist please create new one",
+        },
+        403
+      );
+    }
+    const deleteUser = await db
+      .delete(schema.users)
+      .where(eq(schema.users.email, existingUser[0].email));
+    return c.json(
+      {
+        msg: `User with email ${data.email} has been deleted`,
+      },
+      200
+    );
+  } catch (e) {
+    return c.json(
+      {
+        msg: "An error occurred while deleting the user",
+      },
+      500
+    );
+  }
+});
