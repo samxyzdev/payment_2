@@ -5,20 +5,16 @@ import { db } from "../db/index";
 import * as schema from "../db/schema";
 import { eq } from "drizzle-orm";
 import { sign } from "hono/jwt";
-import bcrypt from "bcrypt";
+import { compare, hash } from "bcrypt";
 
-export const userRouter = new Hono<{
-  Bindings: {
-    JWT_SECRET: string;
-  };
-}>();
+export const userRouter = new Hono();
 
 const signupSchema = insertUserSchema.omit({
   id: true,
 });
 userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
   const data = c.req.valid("json");
-  const hashedpassword = await bcrypt.hash(data.password, 10);
+  const hashedpassword = await hash(data.password, 10);
   try {
     const existingUser = await db
       .select()
@@ -41,6 +37,7 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
       .insert(schema.users)
       .values({ name: data.name, email: data.email, password: hashedpassword })
       .returning();
+
     if (!createUser) {
       return c.json(
         {
@@ -49,7 +46,7 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
         200
       );
     }
-    const token = sign(createUser[0], c.env.JWT_SECRET);
+    const token = await sign(createUser[0], process.env.JWT_SECRET || "");
     return c.json({
       msg: token,
     });
@@ -58,6 +55,32 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
   }
 });
 
-userRouter.post("/signin", async (c) => {
-  return c.text("signinroute");
+const signinSchema = insertUserSchema.omit({
+  id: true,
+  name: true,
+});
+userRouter.post("/signin", zValidator("json", signinSchema), async (c) => {
+  const data = c.req.valid("json");
+  try {
+    const existingUser = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.email, data.email));
+    if (!existingUser.length) {
+      return c.json(
+        {
+          msg: "User doesn't exist please create new one",
+        },
+        403
+      );
+    }
+    if (await compare(data.password, existingUser[0].password)) {
+      const token = await sign(existingUser[0], c.env.JWT_SECRET);
+      return c.json({
+        msg: token,
+      });
+    }
+  } catch (e) {
+    console.log(e);
+  }
 });
