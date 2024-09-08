@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { jwt, verify } from "hono/jwt";
+import { db } from "../db/index";
+import * as schema from "../db/schema";
+import { eq } from "drizzle-orm";
 
 export const paymentRouter = new Hono<{
-  Bindings: {
-    JWT_SECRET: string;
-  };
   Variables: {
     userId: string;
   };
@@ -17,7 +17,7 @@ paymentRouter.use("/*", async (c, next) => {
   }
   const token = authHeader.split(" ")[1];
   try {
-    const user = await verify(token, c.env.JWT_SECRET);
+    const user = await verify(token, process.env.JWT_SECRET || "");
     if (user) {
       c.set("userId", user.id as string);
       await next();
@@ -36,8 +36,13 @@ paymentRouter.use("/*", async (c, next) => {
   }
 });
 
-paymentRouter.get("/balance", (c) => {
+paymentRouter.get("/balance", async (c) => {
+  const userId = Number(c.get("userId"));
+  const balance = await db
+    .select({ userBalance: schema.balance.amount })
+    .from(schema.balance)
+    .where(eq(schema.balance.userId, userId));
   return c.json({
-    msg: "Hello",
+    msg: balance,
   });
 });

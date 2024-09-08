@@ -37,7 +37,6 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
       .insert(schema.users)
       .values({ name: data.name, email: data.email, password: hashedpassword })
       .returning();
-
     if (!createUser) {
       return c.json(
         {
@@ -47,7 +46,6 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
       );
     }
     const token = await sign(createUser[0], process.env.JWT_SECRET || "");
-    localStorage.setItem("Bearer", token);
     return c.json({
       msg: token,
     });
@@ -77,7 +75,6 @@ userRouter.post("/signin", zValidator("json", signinSchema), async (c) => {
     }
     if (await compare(data.password, existingUser[0].password)) {
       const token = await sign(existingUser[0], process.env.JWT_SECRET || "");
-      localStorage.setItem("token", token);
       return c.json({
         msg: token,
       });
@@ -92,17 +89,12 @@ const updateSchema = insertUserSchema.omit({
   password: true,
 });
 userRouter.post("/update", zValidator("json", updateSchema), async (c) => {
-  console.log(1);
   const data = c.req.valid("json");
-  console.log(data);
-  console.log(2);
   try {
     const existingUser = await db
       .select()
       .from(schema.users)
       .where(eq(schema.users.email, data.email));
-    console.log(existingUser);
-    console.log(3);
     if (!existingUser.length) {
       return c.json(
         {
@@ -111,15 +103,11 @@ userRouter.post("/update", zValidator("json", updateSchema), async (c) => {
         403
       );
     }
-    console.log(4);
     const updateUser = await db
       .update(schema.users)
       .set({ name: data.name })
       .where(eq(schema.users.name, existingUser[0].name))
       .returning({ updatedName: schema.users.name });
-
-    console.log(updateSchema);
-    console.log(5);
     return c.json(
       {
         msg: `User name is updated with ${updateUser[0].updatedName}`,
