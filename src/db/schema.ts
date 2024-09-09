@@ -71,3 +71,9 @@ export const insertUserSchema = createInsertSchema(users, {
   name: z.string().min(3),
   email: z.string().email(),
 });
+
+export const p2pTransferSchema = createInsertSchema(p2pTransfer, {
+  amount: z.number(),
+  fromUserId: z.number(),
+  toUserId: z.number(),
+});
