@@ -49,10 +49,9 @@ paymentRouter.get("/balance", async (c) => {
   });
 });
 
-// useid itself
-// to userid
-// existing user balacne check
-// check if user exist on platform
+// amount
+// fromUserId
+// toUSerId
 
 const p2pSchema = p2pTransferSchema.omit({
   id: true,
@@ -60,11 +59,11 @@ const p2pSchema = p2pTransferSchema.omit({
 paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
   const data = c.req.valid("json");
   const userId = Number(c.get("userId"));
-  const checkUser = await db
+  const checkSenderUser = await db
     .select()
     .from(schema.users)
     .where(eq(schema.users.id, userId));
-  if (!checkUser) {
+  if (!checkSenderUser) {
     return c.json(
       {
         msg: "User doesn't exist with us",
@@ -72,14 +71,26 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
       411
     );
   }
-  const existinUserBalance = await db
+  const senderUserBalance = await db
     .select()
     .from(schema.balance)
     .where(eq(schema.users.id, userId));
-  if (existinUserBalance[0].amount < data.amount) {
+  if (senderUserBalance[0].amount < data.amount) {
     return c.json(
       {
         msg: "You don;t have enough money to send",
+      },
+      411
+    );
+  }
+  const checkReceiverUser = await db
+    .select()
+    .from(schema.users)
+    .where(eq(schema.users.id, data.toUserId));
+  if (!checkReceiverUser) {
+    return c.json(
+      {
+        msg: "User doesn't exist with us",
       },
       411
     );
