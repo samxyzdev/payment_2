@@ -13,21 +13,28 @@ const bankWebhookSchema = z.object({
   amount: z.number(),
 });
 
-bankWebhook.get(
+bankWebhook.post(
   "/bankwebhook",
   zValidator("json", bankWebhookSchema),
   async (c) => {
     const data = c.req.valid("json");
     try {
       await db.transaction(async (tx) => {
+        const currentBalance = await tx
+          .select()
+          .from(schema.balance)
+          .where(eq(schema.balance.userId, data.userId))
+          .execute()
+          .then((res) => res[0]?.amount);
         await tx
           .update(schema.balance)
-          .set({ amount: Number(schema.balance.amount) + data.amount })
+          .set({ amount: currentBalance + Number(data.amount) })
           .where(eq(schema.balance.userId, data.userId));
         await tx
           .update(schema.onRampTransaction)
           .set({ status: "success" })
-          .where(eq(schema.onRampTransaction.id, data.userId));
+          .where(eq(schema.onRampTransaction.userId, data.userId));
+        console.log(1);
       });
     } catch (e) {
       console.error(e);

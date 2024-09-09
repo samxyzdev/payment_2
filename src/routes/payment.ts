@@ -52,6 +52,31 @@ paymentRouter.get("/balance", async (c) => {
 const p2pSchema = p2pTransferSchema.omit({
   id: true,
 });
+
+const onrampSchema = onramp.omit({
+  id: true,
+  token: true,
+  createdAt: true,
+  status: true,
+  userId: true,
+});
+paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
+  const data = c.req.valid("json");
+  const userId = Number(c.get("userId"));
+  const token = (Math.random() * 1000).toString();
+  console.log(token);
+  await db.insert(schema.onRampTransaction).values({
+    provider: data.provider,
+    status: "processing",
+    token: token,
+    userId: userId,
+    amount: data.amount * 100,
+  });
+  return c.json({
+    msg: "Done",
+  });
+});
+
 paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
   const data = c.req.valid("json");
   const userId = Number(c.get("userId"));
@@ -105,24 +130,5 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
       toUserId: data.toUserId,
       amount: data.amount,
     });
-  });
-});
-
-const onrampSchema = onramp.omit({
-  id: true,
-});
-paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
-  const data = c.req.valid("json");
-  const userId = Number(c.get("userId"));
-  const token = (Math.random() * 1000).toString();
-  await db.insert(schema.onRampTransaction).values({
-    provider: data.provider,
-    status: "processing",
-    token: token,
-    userId: userId,
-    amount: data.amount * 100,
-  });
-  return c.json({
-    msg: "Done",
   });
 });
