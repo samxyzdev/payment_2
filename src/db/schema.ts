@@ -62,8 +62,12 @@ export const p2pTransfer = pgTable("p2pTransfer", {
   id: serial("id").primaryKey(),
   amount: integer("amount").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  fromUserId: integer("from_user_id").references(() => users.id),
-  toUserId: integer("to_user_id").references(() => users.id),
+  fromUserId: integer("from_user_id")
+    .references(() => users.id)
+    .notNull(),
+  toUserId: integer("to_user_id")
+    .references(() => users.id)
+    .notNull(),
 });
 
 // Schema for inserting a user - can be used to validate API requests
