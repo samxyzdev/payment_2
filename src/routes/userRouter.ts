@@ -39,7 +39,6 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
     );
   }
   try {
-    console.log(1);
     await db.transaction(async (tx) => {
       const [newUser] = await tx
         .insert(schema.users)
@@ -50,21 +49,16 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
         })
         .returning({ id: schema.users.id });
       newUserId = newUser.id;
-      console.log(2);
       await tx.insert(schema.balance).values({
         amount: 0,
         userId: newUser.id,
       });
-      console.log(3);
     });
     const jwtSecret = process.env.JWT_SECRET;
-    console.log(4);
     if (!jwtSecret) {
       throw new Error("JWT_SECRET is not defined");
     }
-    console.log(5);
     const token = await sign({ id: newUserId }, jwtSecret);
-    console.log(6);
     return c.json({
       msg: token,
     });
