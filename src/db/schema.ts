@@ -81,3 +81,9 @@ export const p2pTransferSchema = createInsertSchema(p2pTransfer, {
   fromUserId: z.number(),
   toUserId: z.number(),
 });
+
+export const onramp = createInsertSchema(onRampTransaction, {
+  token: z.string(),
+  provider: z.string(),
+  amount: z.number(),
+});
