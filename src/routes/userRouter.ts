@@ -5,7 +5,6 @@ import { db } from "../db/index";
 import * as schema from "../db/schema";
 import { eq } from "drizzle-orm";
 import { sign } from "hono/jwt";
-import { compare, hash } from "bcrypt";
 
 export const userRouter = new Hono();
 
@@ -14,7 +13,8 @@ const signupSchema = insertUserSchema.omit({
 });
 userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
   const data = c.req.valid("json");
-  const hashedpassword = await hash(data.password, 10);
+  const hashedpassword = await Bun.password.hash(data.password);
+  let newUserId;
   try {
     const existingUser = await db
       .select()
@@ -30,27 +30,52 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
       );
     }
   } catch (e) {
-    console.log(e);
+    console.error("Error while checking existing user:", e);
+    return c.json(
+      {
+        msg: "Error chekking existing user",
+      },
+      500
+    );
   }
   try {
-    const createUser = await db
-      .insert(schema.users)
-      .values({ name: data.name, email: data.email, password: hashedpassword })
-      .returning();
-    if (!createUser) {
-      return c.json(
-        {
-          msg: "There was some problem",
-        },
-        200
-      );
+    console.log(1);
+    await db.transaction(async (tx) => {
+      const [newUser] = await tx
+        .insert(schema.users)
+        .values({
+          name: data.name,
+          email: data.email,
+          password: hashedpassword,
+        })
+        .returning({ id: schema.users.id });
+      newUserId = newUser.id;
+      console.log(2);
+      await tx.insert(schema.balance).values({
+        amount: 0,
+        userId: newUser.id,
+      });
+      console.log(3);
+    });
+    const jwtSecret = process.env.JWT_SECRET;
+    console.log(4);
+    if (!jwtSecret) {
+      throw new Error("JWT_SECRET is not defined");
     }
-    const token = await sign(createUser[0], process.env.JWT_SECRET || "");
+    console.log(5);
+    const token = await sign({ id: newUserId }, jwtSecret);
+    console.log(6);
     return c.json({
       msg: token,
     });
   } catch (e) {
-    console.log(e);
+    console.error("Erro during signup process:", e);
+    return c.json(
+      {
+        msg: "There was some problem",
+      },
+      500
+    );
   }
 });
 
@@ -73,7 +98,7 @@ userRouter.post("/signin", zValidator("json", signinSchema), async (c) => {
         403
       );
     }
-    if (await compare(data.password, existingUser[0].password)) {
+    if (await Bun.password.verify(data.password, existingUser[0].password)) {
       const token = await sign(existingUser[0], process.env.JWT_SECRET || "");
       return c.json({
         msg: token,
