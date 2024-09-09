@@ -30,8 +30,16 @@ bankWebhook.get(
           .where(eq(schema.onRampTransaction.id, data.userId));
       });
     } catch (e) {
-      console.log(e);
+      console.error(e);
+      return c.json(
+        {
+          msg: "Erro while processing webhook",
+        },
+        200
+      );
     }
-    return;
+    return c.json({
+      msg: "Captured",
+    });
   }
 );
