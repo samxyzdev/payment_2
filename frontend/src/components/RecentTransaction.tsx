@@ -1,3 +1,5 @@
+import { TopBar } from "./TopBar";
+
 export const RecentTransaction = () => {
   return (
     <div>
@@ -9,7 +11,7 @@ export const RecentTransaction = () => {
 function RecentTable() {
   return (
     <div className="border shadow-md p-4">
-      <TopBar />
+      <TopBar title="Recent Transaction" />
       <div className="relative overflow-x-auto pt-4">
         <table className="w-full text-sm text-left rtl:text-right ">
           <thead className="text-xs text-gray-500 ">
@@ -67,20 +69,6 @@ function RecentTable() {
             </tr>
           </tbody>
         </table>
-      </div>
-    </div>
-  );
-}
-
-function TopBar() {
-  return (
-    <div>
-      <div>
-        <div className="flex justify-between">
-          <div>Recent Activity</div>
-          <div className="text-xs">Filters</div>
-        </div>
-        <div className="border-b-2"></div>
       </div>
     </div>
   );

@@ -1,27 +1,20 @@
+import { Button } from "./Button";
+import { TopBar } from "./TopBar";
+
 export const BalanceCard = () => {
   return (
-    <div className="max-w-md shadow-lg border p-2">
-      <TopBar />
+    <div className="max-w-md shadow-lg border p-4">
+      <TopBar title="Curren Balance" />
       <div className="p-10">
         <Balance />
+      </div>
+      <div className="flex justify-center">
+        <Button type={"send"} />
+        <Button type={"receive"} />
       </div>
     </div>
   );
 };
-
-function TopBar() {
-  return (
-    <div>
-      <div>
-        <div className="flex justify-between">
-          <div>Current Balance</div>
-          <div>Balance History</div>
-        </div>
-        <div className="border-b max-w-md"></div>
-      </div>
-    </div>
-  );
-}
 
 function Balance() {
   return (

@@ -1,6 +1,7 @@
 import { Appbar } from "../components/Appbar";
 import { BalanceCard } from "../components/BalanceCard";
 import { RecentTransaction } from "../components/RecentTransaction";
+import { Transaction } from "../components/Transaction";
 
 export const Dashboard = () => {
   return (
@@ -10,9 +11,12 @@ export const Dashboard = () => {
         <div className="flex">
           <BalanceCard />
           <div className="pl-4">
-            <RecentTransaction />
+            <Transaction />
           </div>
         </div>
+      </div>
+      <div className="flex justify-center">
+        <RecentTransaction />
       </div>
     </div>
   );
