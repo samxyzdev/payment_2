@@ -1,10 +1,7 @@
-import { SendMoney } from "./SendMoney";
-
 export const BalanceCard = () => {
   return (
     <div>
-      <div className="w-[20%] shadow-md p-4">
-        {/* // balance Card */}
+      <div className=" shadow-lg p-4">
         <div>
           <div className="flex justify-between">
             <div>Current Balance</div>
@@ -29,10 +26,6 @@ export const BalanceCard = () => {
             </button>
           </div>
         </div>
-        {/* // balace card -------- */}
-      </div>
-      <div>
-        <SendMoney />
       </div>
     </div>
   );
