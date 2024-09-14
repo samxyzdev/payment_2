@@ -29,20 +29,27 @@ export const Dashboard = () => {
       case DashboardViews.ADD_MONEY:
         return <AddMoney />;
       default:
-        return <RecentActivity />;
+        return <AddMoney />;
     }
   };
 
   return (
-    <div className="flex justify-center p-4">
-      <div className="grid grid-cols-12">
-        <div className="col-span-4">
-          <BalanceCard
-            onTransferMoneyClick={handleTransferMoneyClick}
-            onAddMoneyClick={handleAddMoneyClick}
-          />
+    <div>
+      <div className="p-4">
+        <div className="flex justify-center">
+          <div className="grid grid-cols-12">
+            <div className="col-span-4">
+              <BalanceCard
+                onTransferMoneyClick={handleTransferMoneyClick}
+                onAddMoneyClick={handleAddMoneyClick}
+              />
+            </div>
+            <div className="col-span-8 pl-6">{renderActiveView()}</div>
+          </div>
         </div>
-        <div className="col-span-8 pl-6">{renderActiveView()}</div>
+        <div className="p-4 px-80">
+          <RecentActivity />
+        </div>
       </div>
     </div>
   );

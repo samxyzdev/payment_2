@@ -3,9 +3,11 @@ import "./App.css";
 import { Auth } from "./pages/Auth";
 import { BalanceCard } from "./components/BalanceCard";
 import { Dashboard } from "./pages/Dashboard";
+import { Appbar } from "./components/Appbar";
 function App() {
   return (
     <>
+      <Appbar />
       <BrowserRouter>
         <Routes>
           <Route path="/signup" element={<Auth type="signup" />} />
