@@ -4,15 +4,35 @@ import { RecentActivity } from "../components/RecentActivity";
 import { SendMoney } from "../components/SendMoney";
 import { AddMoney } from "../components/AddMoney";
 
+// Enum for different dashboard views
+const DashboardViews = {
+  RECENT_ACTIVITY: "RECENT_ACTIVITY",
+  SEND_MONEY: "SEND_MONEY",
+  ADD_MONEY: "ADD_MONEY",
+};
+
 export const Dashboard = () => {
-  const [transferMoney, setTransferMoney] = useState(false);
-  const [addMoney, setAddMoney] = useState(false);
+  const [activeView, setActiveView] = useState(DashboardViews.RECENT_ACTIVITY);
+
   const handleAddMoneyClick = () => {
-    setAddMoney((prevState) => !prevState);
+    setActiveView(DashboardViews.ADD_MONEY);
   };
+
   const handleTransferMoneyClick = () => {
-    setAddMoney((prevState) => !prevState);
+    setActiveView(DashboardViews.SEND_MONEY);
   };
+
+  const renderActiveView = () => {
+    switch (activeView) {
+      case DashboardViews.SEND_MONEY:
+        return <SendMoney />;
+      case DashboardViews.ADD_MONEY:
+        return <AddMoney />;
+      default:
+        return <RecentActivity />;
+    }
+  };
+
   return (
     <div className="flex justify-center p-4">
       <div className="grid grid-cols-12">
@@ -22,15 +42,7 @@ export const Dashboard = () => {
             onAddMoneyClick={handleAddMoneyClick}
           />
         </div>
-        <div className="col-span-8 pl-6">
-          {transferMoney === false ? (
-            <RecentActivity />
-          ) : addMoney === false ? (
-            <SendMoney />
-          ) : (
-            <AddMoney />
-          )}
-        </div>
+        <div className="col-span-8 pl-6">{renderActiveView()}</div>
       </div>
     </div>
   );
