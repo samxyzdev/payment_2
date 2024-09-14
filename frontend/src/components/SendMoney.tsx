@@ -6,11 +6,16 @@ interface InputFieldSchema {
 export const SendMoney = () => {
   return (
     <div>
-      <InputField title="To" placeholder="Enter receiver Id" />
-      <InputField title="Amount" placeholder="Enter Amount" />
-      <button className="p-4 mt-4 rounded-lg bg-gray-200 font-semibold">
-        Send Money
-      </button>
+      <div className="shadow-lg p-4 rounded-sm">
+        <div className="font-bold text-2xl">Transfer Money</div>
+        <InputField title="To" placeholder="Enter receiver Id" />
+        <InputField title="Amount" placeholder="Enter Amount" />
+        <div className="flex justify-center">
+          <button className="p-4 mt-2 rounded-lg bg-gray-200 font-semibold">
+            Send Money
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
