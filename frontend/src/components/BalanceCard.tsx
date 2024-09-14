@@ -1,28 +1,24 @@
-import { Button } from "./Button";
-import { TopBar } from "./TopBar";
-
 export const BalanceCard = () => {
   return (
-    <div className="max-w-md shadow-lg border p-4">
-      <TopBar title="Curren Balance" />
-      <div className="p-10">
-        <Balance />
+    <div className="w-[20%] shadow-md p-4">
+      <div className="flex justify-between">
+        <div>Current Balance</div>
+        <div>
+          <div>Balance History</div>
+        </div>
       </div>
-      <div className="flex justify-center">
-        <Button type={"send"} />
-        <Button type={"receive"} />
+      <div className="border-b-2"></div>
+      <div className="flex justify-center text-3xl p-4 font-bold">
+        120.556
+        <span className="text-sm font-normal text-gray-500 flex items-end pl-1">
+          Available
+        </span>
+      </div>
+      <div className="flex text-sm gap-4">
+        <button className="p-2 rounded-md bg-gray-200">Transfer Money</button>
+        <button className="p-2 rounded-md bg-gray-200">Add Money</button>
+        <button className="p-2 rounded-md bg-gray-200">Receive Money</button>
       </div>
     </div>
   );
 };
-
-function Balance() {
-  return (
-    <div className="flex">
-      <div className="text-7xl">$120.56</div>
-      <div className="flex flex-col justify-end ml-2 text-gray-500">
-        <div>Available</div>
-      </div>
-    </div>
-  );
-}
