@@ -15,7 +15,7 @@ export const AddMoney = () => {
         />
         <div className="flex justify-center">
           <button className="p-4 mt-2 rounded-lg bg-gray-200 font-semibold">
-            Send Money
+            Add Money
           </button>
         </div>
       </div>
