@@ -60,7 +60,7 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
     }
     const token = await sign({ id: newUserId }, jwtSecret);
     return c.json({
-      msg: token,
+      jwtToken: token,
     });
   } catch (e) {
     console.error("Erro during signup process:", e);
