@@ -1,3 +1,6 @@
+import axios from "axios";
+import { useEffect, useState } from "react";
+
 export const BalanceCard = ({
   onTransferMoneyClick,
   onAddMoneyClick,
@@ -5,6 +8,29 @@ export const BalanceCard = ({
   onTransferMoneyClick: () => void;
   onAddMoneyClick: () => void;
 }) => {
+  const [userBalance, setUserBalance] = useState(0);
+  const jwtToken = localStorage.getItem("token");
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/v1/payment/balance",
+          {
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+            },
+          }
+        );
+        const { msg } = response.data;
+        const [{ userBalance }] = msg;
+        setUserBalance(userBalance); // assuming the balance is in `response.data.balance`
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+      }
+    };
+    fetchBalance();
+  }, []); // empty dependency array to run only once when component mounts
+
   return (
     <div>
       <div className="shadow-lg p-4 ">
@@ -17,7 +43,7 @@ export const BalanceCard = ({
           </div>
           <div className="border-b-2"></div>
           <div className="flex justify-center text-6xl p-14 font-bold">
-            120.556
+            {userBalance}
             <span className="text-sm font-normal text-gray-500 flex items-end pl-1">
               Available
             </span>
