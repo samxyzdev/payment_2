@@ -1,29 +1,28 @@
 import { useState, useEffect } from "react";
-import { decode } from "jsonwebtoken";
+import { jwtDecode } from "jwt-decode";
 
 export const Appbar = () => {
-  // const [userInitials, setUserInitials] = useState("");
+  const [initials, setInitials] = useState("");
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-
-  //   if (token) {
-  //     const decodedToken = decode(token) as any; // Use correct type for decodedToken
-  //     if (decodedToken?.name) {
-  //       const initials = decodedToken.name
-  //         .split(" ")
-  //         .map((namePart: string) => namePart.charAt(0).toUpperCase())
-  //         .join("");
-  //       setUserInitials(initials);
-  //     }
-  //   }
-  // }, []);
+  useEffect(() => {
+    const jwtToken = localStorage.getItem("token");
+    const {
+      id: { name },
+    } = jwtDecode(jwtToken || "");
+    const initial = name
+      .split(" ")
+      .map((word: any) => word[0])
+      .join("")
+      .toUpperCase();
+    setInitials(initial);
+    console.log(initial);
+  }, []);
 
   return (
     <nav className="bg-white border-gray-200">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <Logo />
-        <UserMenu userInitials="JS" />
+        <UserMenu userInitials={initials} />
         <NavLinks />
       </div>
     </nav>
