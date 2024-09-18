@@ -8,13 +8,22 @@ import { sign } from "hono/jwt";
 
 export const userRouter = new Hono();
 
+interface newUserIdSchema {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  createdAt: Date;
+}
+
 const signupSchema = insertUserSchema.omit({
   id: true,
 });
 userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
   const data = c.req.valid("json");
   const hashedpassword = await Bun.password.hash(data.password);
-  let newUserId;
+  let newUserId: newUserIdSchema | null = null;
+  // Checking Existing User --------------------
   try {
     const existingUser = await db
       .select()
@@ -38,7 +47,10 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
       500
     );
   }
+  //--------------------------------------------
+  // Creating New User--------------------------
   try {
+    //----------------------------------------
     await db.transaction(async (tx) => {
       const [newUser] = await tx
         .insert(schema.users)
@@ -47,18 +59,24 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
           email: data.email,
           password: hashedpassword,
         })
-        .returning({ id: schema.users.id });
-      newUserId = newUser.id;
+        .returning();
+      //---------------------------
+      newUserId = newUser;
+      //-----------------------------------------
       await tx.insert(schema.balance).values({
         amount: 0,
         userId: newUser.id,
       });
     });
+    //-----------------------------------------
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
       throw new Error("JWT_SECRET is not defined");
     }
     const token = await sign({ id: newUserId }, jwtSecret);
+    //-------------------------------------
+    console.log("HWLLO FROM EERROR");
+
     return c.json({
       jwtToken: token,
     });
@@ -72,6 +90,7 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
     );
   }
 });
+// --------------------------------------------------
 
 const signinSchema = insertUserSchema.omit({
   id: true,

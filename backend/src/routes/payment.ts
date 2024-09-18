@@ -8,7 +8,7 @@ import { p2pTransferSchema, onramp } from "../db/schema";
 
 export const paymentRouter = new Hono<{
   Variables: {
-    userId: string;
+    userId: number;
   };
 }>();
 
@@ -21,7 +21,7 @@ paymentRouter.use("/*", async (c, next) => {
   try {
     const user = await verify(token, process.env.JWT_SECRET || "");
     if (user) {
-      c.set("userId", user.id as string);
+      c.set("userId", user.id as number);
       await next();
     } else {
       return c.json({
@@ -39,7 +39,10 @@ paymentRouter.use("/*", async (c, next) => {
 });
 
 paymentRouter.get("/balance", async (c) => {
-  const userId = Number(c.get("userId"));
+  const userId = c.get("userId").id;
+  if (isNaN(userId)) {
+    return c.json({ msg: "Invalid user ID" }, 400);
+  }
   const balance = await db
     .select({ userBalance: schema.balance.amount })
     .from(schema.balance)
@@ -63,6 +66,10 @@ const onrampSchema = onramp.omit({
 paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
   const data = c.req.valid("json");
   const userId = Number(c.get("userId"));
+  if (isNaN(userId)) {
+    return c.json({ msg: "Invalid user ID" }, 400);
+  }
+
   const token = (Math.random() * 1000).toString();
   console.log(token);
   await db.insert(schema.onRampTransaction).values({
@@ -80,6 +87,9 @@ paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
 paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
   const data = c.req.valid("json");
   const userId = Number(c.get("userId"));
+  if (isNaN(userId)) {
+    return c.json({ msg: "Invalid user ID" }, 400);
+  }
   const checkSenderUser = await db
     .select()
     .from(schema.users)
@@ -116,6 +126,14 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
       411
     );
   }
+  const senderAmount = Number(senderUserBalance[0].amount);
+  if (isNaN(senderAmount)) {
+    return c.json({ msg: "Invalid sender balance" }, 500);
+  }
+  if (isNaN(data.amount) || isNaN(data.toUserId)) {
+    return c.json({ msg: "Invalid transfer data" }, 400);
+  }
+
   await db.transaction(async (tx) => {
     await tx
       .update(schema.balance)
