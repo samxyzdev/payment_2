@@ -65,11 +65,10 @@ const onrampSchema = onramp.omit({
 });
 paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
   const data = c.req.valid("json");
-  const userId = Number(c.get("userId"));
+  const userId = c.get("userId").id;
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
-
   const token = (Math.random() * 1000).toString();
   console.log(token);
   await db.insert(schema.onRampTransaction).values({
@@ -86,7 +85,7 @@ paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
 
 paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
   const data = c.req.valid("json");
-  const userId = Number(c.get("userId"));
+  const userId = c.get("userId").id;
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }

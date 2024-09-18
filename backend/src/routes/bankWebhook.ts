@@ -25,22 +25,35 @@ bankWebhook.post(
           .from(schema.balance)
           .where(eq(schema.balance.userId, data.userId))
           .execute()
-          .then((res) => res[0]?.amount);
-        await tx
+          .then((res) => {
+            console.log("Balance query result:", res);
+            return res[0]?.amount ?? 0;
+          });
+        if (!currentBalance) {
+          console.error(`No balance found for userId: ${data.userId}`);
+        }
+
+        if (isNaN(currentBalance) || isNaN(data.amount)) {
+          throw new Error("Invalid balance or amount");
+        }
+        const updateBalance = await tx
           .update(schema.balance)
-          .set({ amount: currentBalance + Number(data.amount) })
-          .where(eq(schema.balance.userId, data.userId));
+          .set({ amount: currentBalance + data.amount })
+          .where(eq(schema.balance.userId, data.userId))
+          .execute();
+
+        console.log("Balance update result:", updateBalance);
+
         await tx
           .update(schema.onRampTransaction)
           .set({ status: "success" })
           .where(eq(schema.onRampTransaction.userId, data.userId));
-        console.log(1);
       });
     } catch (e) {
       console.error(e);
       return c.json(
         {
-          msg: "Erro while processing webhook",
+          msg: "Error while processing webhook",
         },
         200
       );
