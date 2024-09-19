@@ -1,9 +1,11 @@
+import { Button } from "./Button";
+
 interface InputFieldSchema {
   title: string;
   placeholder: string;
 }
 
-export const SendMoney = () => {
+export const TransferMoney = () => {
   return (
     <div>
       <div className="shadow-lg p-4 rounded-sm">
@@ -11,9 +13,9 @@ export const SendMoney = () => {
         <InputField title="To" placeholder="Enter receiver Id" />
         <InputField title="Amount" placeholder="Enter Amount" />
         <div className="flex justify-center">
-          <button className="p-4 mt-2 rounded-lg bg-gray-200 font-semibold">
-            Send Money
-          </button>
+          <div className="p-4 mt-2 rounded-lg bg-gray-200 font-semibold">
+            <Button name={"Send Money"} />
+          </div>
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
+import { Button } from "./Button";
 
 export const AddMoney = () => {
   const [amount, setAmount] = useState<number>(0);
@@ -47,12 +48,9 @@ export const AddMoney = () => {
           required
         />
         <div className="flex justify-center">
-          <button
-            className="p-4 mt-2 rounded-lg bg-gray-200 font-semibold"
-            onClick={handleOnClick}
-          >
-            Add Money
-          </button>
+          <div className="p-4 mt-2 rounded-lg bg-gray-200 font-semibold">
+            <Button onClick={handleOnClick} name={"Add Money"} />
+          </div>
         </div>
       </div>
     </div>

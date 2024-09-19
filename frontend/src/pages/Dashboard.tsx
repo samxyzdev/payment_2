@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BalanceCard } from "../components/BalanceCard";
 import { RecentActivity } from "../components/RecentActivity";
-import { SendMoney } from "../components/SendMoney";
+import { TransferMoney } from "../components/TransferMoney";
 import { AddMoney } from "../components/AddMoney";
 
 // Enum for different dashboard views
@@ -25,7 +25,7 @@ export const Dashboard = () => {
   const renderActiveView = () => {
     switch (activeView) {
       case DashboardViews.SEND_MONEY:
-        return <SendMoney />;
+        return <TransferMoney />;
       case DashboardViews.ADD_MONEY:
         return <AddMoney />;
       default:

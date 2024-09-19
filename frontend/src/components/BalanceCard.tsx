@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Button } from "./Button";
 
 export const BalanceCard = ({
   onTransferMoneyClick,
@@ -50,24 +51,29 @@ export const BalanceCard = ({
             </span>
           </div>
           <div className="flex justify-center text-sm gap-4">
-            <button
-              className="p-2 rounded-md bg-gray-200"
+            <BalanceCardButton
               onClick={onTransferMoneyClick}
-            >
-              Transfer Money
-            </button>
-            <button
-              className="p-2 rounded-md bg-gray-200"
-              onClick={onAddMoneyClick}
-            >
-              Add Money
-            </button>
-            <button className="p-2 rounded-md bg-gray-200">
-              Receive Money
-            </button>
+              name={"TransferMoney"}
+            />
+            <BalanceCardButton onClick={onAddMoneyClick} name={"Add Money"} />
+            <BalanceCardButton name={"Receive Money"} />
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+function BalanceCardButton({
+  name,
+  onClick,
+}: {
+  name: string;
+  onClick?: () => void;
+}) {
+  return (
+    <div className="p-2 rounded-md bg-gray-200">
+      <Button onClick={onClick} name={name} />
+    </div>
+  );
+}
