@@ -10,6 +10,7 @@ export const BalanceCard = ({
 }) => {
   const [userBalance, setUserBalance] = useState(0);
   const jwtToken = localStorage.getItem("token");
+
   useEffect(() => {
     const fetchBalance = async () => {
       try {

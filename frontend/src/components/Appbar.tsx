@@ -23,7 +23,7 @@ export const Appbar = () => {
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <Logo />
         <UserMenu userInitials={initials} />
-        <NavLinks />
+        {/* <NavLinks /> */}
       </div>
     </nav>
   );
