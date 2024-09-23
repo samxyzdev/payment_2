@@ -149,3 +149,31 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
     });
   });
 });
+
+paymentRouter.get("/status", async (c) => {
+  const userId = c.get("userId").id;
+  console.log("User ID:", userId);
+
+  if (isNaN(userId)) {
+    return c.json({ msg: "Invalid user ID" }, 400);
+  }
+
+  const result = await db
+    .select({
+      amount: schema.onRampTransaction.amount,
+      date: schema.onRampTransaction.createdAt,
+      status: schema.onRampTransaction.status,
+    })
+    .from(schema.onRampTransaction)
+    .where(eq(schema.onRampTransaction.userId, userId));
+
+  if (result.length === 0) {
+    return c.json({ msg: "No transactions found for this user" }, 404);
+  }
+  const { amount, date, status } = result[0];
+  return c.json({
+    amount,
+    status,
+    date,
+  });
+});
