@@ -46,7 +46,10 @@ export default function SignUpPage() {
         setError("Error while signing up, please try again.");
       }
     } catch (err) {
-      setError("Error while signing up, please check your network.");
+      const errorMessage =
+        err.response?.data?.msg ||
+        "Error while signing up, please check your network.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -101,6 +104,7 @@ export default function SignUpPage() {
                   required
                 />
               </div>
+              {/* Display error message */}
               {error && <p className="text-red-500 text-sm">{error}</p>}
             </div>
           </form>
