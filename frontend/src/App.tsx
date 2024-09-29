@@ -1,37 +1,28 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { Appbar } from "./components/Appbar";
-import { Auth } from "./pages/Auth";
-import { Dashboard } from "./pages/Dashboard";
-import { NotFound } from "./pages/NotFound";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import SignUpPage from "./components/v0singup";
+import SignIpPage from "./components/v0signin";
+import { Suspense } from "react";
+import { Loading } from "./components/Loading";
 
-function Layout() {
-  const location = useLocation();
-
-  // Define paths where Appbar should not be rendered
-  const noAppbarPaths = ["/signin", "/signup", "*"];
-  const shouldRenderAppbar =
-    !noAppbarPaths.includes(location.pathname) && location.pathname !== "/404";
-
+export default function App() {
   return (
-    <>
-      {/* Conditionally render Appbar if the current path is not in noAppbarPaths */}
-      {shouldRenderAppbar && <Appbar />}
-      <Routes>
-        <Route path="/signup" element={<Auth type="signup" />} />
-        <Route path="/signin" element={<Auth type="signin" />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </>
+    <div>
+      <Suspense fallback={<Loading />}>
+        <AuthApp />
+      </Suspense>
+    </div>
   );
 }
 
-function App() {
+function AuthApp() {
   return (
     <BrowserRouter>
-      <Layout />
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/signin" element={<SignIpPage />} />
+      </Routes>
     </BrowserRouter>
   );
 }
-
-export default App;
