@@ -1,8 +1,15 @@
 import { Bell } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { jwtDecode } from "jwt-decode";
 
 export const AppBar = () => {
+  const token = localStorage.getItem("token");
+  const decodedToken = jwtDecode(token || "");
+  const name = decodedToken.id.name;
+
+  const nameParts = name.split(" ").filter((part) => part.length > 0);
+  const initials = nameParts.map((part) => part[0].toUpperCase()).join("");
   return (
     <div>
       <header className="flex justify-between items-center mb-6">
@@ -18,7 +25,7 @@ export const AppBar = () => {
           </Button>
           <Avatar>
             <AvatarImage src="/placeholder-user.jpg" alt="User" />
-            <AvatarFallback>JD</AvatarFallback>
+            <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
         </div>
       </header>

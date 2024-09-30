@@ -7,12 +7,12 @@ export const SideBar = () => {
     <div>
       <aside className="w-64 bg-white p-4 shadow-md min-h-screen">
         <div className="flex items-center mb-6">
-          <Avatar className="h-10 w-10">
+          {/* <Avatar className="h-10 w-10">
             <AvatarImage src="/placeholder-user.jpg" alt="User" />
-            <AvatarFallback>PP</AvatarFallback>
-          </Avatar>
+            <AvatarFallback>PAY</AvatarFallback>
+          </Avatar> */}
           <div className="ml-3">
-            <h2 className="font-semibold">PayPal Clone</h2>
+            <h2 className="font-semibold">Payment</h2>
             <p className="text-sm text-gray-500">Welcome back!</p>
           </div>
         </div>
@@ -21,7 +21,7 @@ export const SideBar = () => {
             <Home className="mr-2 h-4 w-4" />
             Dashboard
           </Button>
-          <Button variant="ghost" className="w-full justify-start">
+          {/* <Button variant="ghost" className="w-full justify-start">
             <CreditCard className="mr-2 h-4 w-4" />
             Cards
           </Button>
@@ -32,7 +32,7 @@ export const SideBar = () => {
           <Button variant="ghost" className="w-full justify-start">
             <User className="mr-2 h-4 w-4" />
             Profile
-          </Button>
+          </Button> */}
           <Button variant="ghost" className="w-full justify-start text-red-500">
             <LogOut className="mr-2 h-4 w-4" />
             Logout
