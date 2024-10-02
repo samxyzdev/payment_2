@@ -6,8 +6,38 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export const RecentTransaction = () => {
+  const [backendData, setBackendData] = useState(null);
+  const [error, setError] = useState("");
+  const jwt = localStorage.getItem("token");
+
+  useEffect(() => {
+    const request = axios
+      .get("http://localhost:3000/api/v1/payment/status", {
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+      })
+      .then((result) => {
+        setBackendData(result.data);
+      })
+      .catch((err) => {
+        setError("Failed to load backendData");
+      });
+  }, [jwt]);
+  console.log(backendData);
+
+  return (
+    <div>
+      <CardData backendData={backendData} />
+    </div>
+  );
+};
+
+function CardData({ backendData }) {
   return (
     <div>
       <Card>
@@ -26,39 +56,20 @@ export const RecentTransaction = () => {
                 <p className="text-sm font-medium leading-none">
                   Payment to John Doe
                 </p>
-                <p className="text-sm text-gray-500">July 25, 2023</p>
-              </div>
-              <div className="ml-auto font-medium">-$50.00</div>
-            </div>
-            <div className="flex items-center">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src="/placeholder-user.jpg" alt="Avatar" />
-                <AvatarFallback>AJ</AvatarFallback>
-              </Avatar>
-              <div className="ml-4 space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  Payment from Alice Johnson
+                <p className="text-sm text-gray-500">
+                  {backendData ? backendData.date.split("T")[0] : ""}
                 </p>
-                <p className="text-sm text-gray-500">July 22, 2023</p>
               </div>
-              <div className="ml-auto font-medium text-green-600">+$120.00</div>
-            </div>
-            <div className="flex items-center">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src="/placeholder-user.jpg" alt="Avatar" />
-                <AvatarFallback>SE</AvatarFallback>
-              </Avatar>
-              <div className="ml-4 space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  Subscription - Spotify
-                </p>
-                <p className="text-sm text-gray-500">July 20, 2023</p>
+              <div className="ml-auto font-bold">
+                {backendData ? `₹.${backendData.finalAmount.toFixed(2)}` : ""}
               </div>
-              <div className="ml-auto font-medium">-$9.99</div>
+              <div className="pl-9 font-bold">
+                {backendData ? backendData.status : ""}
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
     </div>
   );
-};
+}

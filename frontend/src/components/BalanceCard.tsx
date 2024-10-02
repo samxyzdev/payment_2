@@ -55,9 +55,8 @@ export const BalanceCard = () => {
         </CardHeader>
         <CardContent>
           <div className="text-4xl font-bold">
-            ₹
             {balance && balance.msg && balance.msg[0].userBalance !== undefined
-              ? balance.msg[0].userBalance
+              ? `₹.${balance.msg[0].userBalance.toFixed(2)}`
               : "Balance unavailable"}
           </div>
           <div className="mt-4 flex space-x-4">
