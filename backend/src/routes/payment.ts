@@ -171,8 +171,9 @@ paymentRouter.get("/status", async (c) => {
     return c.json({ msg: "No transactions found for this user" }, 404);
   }
   const { amount, date, status } = result[0];
+  const finalAmount = amount / 100;
   return c.json({
-    amount,
+    finalAmount,
     status,
     date,
   });
