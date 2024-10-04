@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+// import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import {
   Card,
   CardContent,
@@ -8,6 +8,15 @@ import {
 } from "./ui/card";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const RecentTransaction = () => {
   const [backendData, setBackendData] = useState(null);
@@ -15,20 +24,31 @@ export const RecentTransaction = () => {
   const jwt = localStorage.getItem("token");
 
   useEffect(() => {
-    const request = axios
-      .get("http://localhost:3000/api/v1/payment/status", {
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-        },
-      })
-      .then((result) => {
-        setBackendData(result.data);
-      })
-      .catch((err) => {
-        setError("Failed to load backendData");
-      });
+    if (jwt) {
+      axios
+        .get("http://localhost:3000/api/v1/payment/status", {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        })
+        .then((result) => {
+          setBackendData(result.data);
+        })
+        .catch((err) => {
+          setError("Failed to load backendData");
+        });
+    } else {
+      setError("JWT token is missing");
+    }
   }, [jwt]);
-  console.log(backendData);
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  if (!backendData) {
+    return <div>Loading....</div>;
+  }
 
   return (
     <div>
@@ -37,7 +57,8 @@ export const RecentTransaction = () => {
   );
 };
 
-function CardData({ backendData }) {
+function CardData({ backendData }: any) {
+  if (!backendData) return null;
   return (
     <div>
       <Card>
@@ -46,28 +67,29 @@ function CardData({ backendData }) {
           <CardDescription>You have 3 transactions this month.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src="/placeholder-user.jpg" alt="Avatar" />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
-              <div className="ml-4 space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  Payment to John Doe
-                </p>
-                <p className="text-sm text-gray-500">
-                  {backendData ? backendData.date.split("T")[0] : ""}
-                </p>
-              </div>
-              <div className="ml-auto font-bold">
-                {backendData ? `₹.${backendData.finalAmount.toFixed(2)}` : ""}
-              </div>
-              <div className="pl-9 font-bold">
-                {backendData ? backendData.status : ""}
-              </div>
-            </div>
-          </div>
+          <Table>
+            <TableCaption>A list of your recent invoices.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Method</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell className="font-medium">
+                  {backendData.date ? backendData.date.split("T")[0] : ""}
+                </TableCell>
+                <TableCell>Paid</TableCell>
+                <TableCell>Credit Card</TableCell>
+                <TableCell className="text-right">
+                  {backendData.finalAmount || "N/A"}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
