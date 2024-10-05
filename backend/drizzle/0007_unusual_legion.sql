@@ -1,0 +1,1 @@
+ALTER TABLE "on_ramp_transaction" RENAME COLUMN "typeEnum" TO "type";

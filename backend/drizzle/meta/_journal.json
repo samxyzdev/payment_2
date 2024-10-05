@@ -29,6 +29,34 @@
       "when": 1725801118525,
       "tag": "0003_flawless_gamora",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1728027704325,
+      "tag": "0004_chief_hemingway",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1728028845491,
+      "tag": "0005_workable_groot",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1728029706046,
+      "tag": "0006_milky_lionheart",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1728029878815,
+      "tag": "0007_unusual_legion",
+      "breakpoints": true
     }
   ]
 }

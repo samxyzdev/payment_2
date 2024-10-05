@@ -11,10 +11,11 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const onRampStatusEnum = pgEnum("onramp", [
-  "success",
-  "failed",
-  "processing",
+  "Success",
+  "Failed",
+  "Processing",
 ]);
+export const typeEnum = pgEnum("type", ["Credit", "Debit"]);
 
 export const users = pgTable(
   "user",
@@ -55,6 +56,7 @@ export const onRampTransaction = pgTable("on_ramp_transaction", {
   provider: varchar("provider", { length: 256 }).notNull(),
   amount: integer("amount").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  type: typeEnum("type"),
   userId: integer("user_id").references(() => users.id),
 });
 
@@ -86,4 +88,5 @@ export const onramp = createInsertSchema(onRampTransaction, {
   token: z.string(),
   provider: z.string(),
   amount: z.number(),
+  type: z.string(),
 });

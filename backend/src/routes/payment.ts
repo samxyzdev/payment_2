@@ -20,6 +20,8 @@ paymentRouter.use("/*", async (c, next) => {
   const token = authHeader.split(" ")[1];
   try {
     const user = await verify(token, process.env.JWT_SECRET || "");
+    // console.log(user);
+
     if (user) {
       c.set("userId", user.id as number);
       await next();
@@ -43,12 +45,18 @@ paymentRouter.get("/balance", async (c) => {
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
+  // console.log("in Balanced router User ID:", userId);
   const balance = await db
     .select({ userBalance: schema.balance.amount })
     .from(schema.balance)
     .where(eq(schema.balance.userId, userId));
+
+  // console.log(balance);
+
+  const finalBalance = balance[0];
+
   return c.json({
-    msg: balance,
+    msg: finalBalance,
   });
 });
 
@@ -70,13 +78,14 @@ paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
   const token = (Math.random() * 1000).toString();
-  console.log(token);
+  console.log(token); // this is for generating token
   await db.insert(schema.onRampTransaction).values({
     provider: data.provider,
-    status: "processing",
+    status: "Processing",
     token: token,
     userId: userId,
     amount: data.amount * 100,
+    type: "Credit",
   });
   return c.json({
     msg: "Done",
@@ -108,7 +117,7 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
   if (senderUserBalance[0].amount < data.amount) {
     return c.json(
       {
-        msg: "You don;t have enough money to send",
+        msg: "You do not have enough money to send",
       },
       411
     );
@@ -152,29 +161,36 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
 
 paymentRouter.get("/status", async (c) => {
   const userId = c.get("userId").id;
-  console.log("User ID:", userId);
+  console.log("in status routee User ID:", userId);
 
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
+  // console.log("HELLO2");
 
   const result = await db
     .select({
       amount: schema.onRampTransaction.amount,
       date: schema.onRampTransaction.createdAt,
       status: schema.onRampTransaction.status,
+      type: schema.onRampTransaction.type,
     })
     .from(schema.onRampTransaction)
     .where(eq(schema.onRampTransaction.userId, userId));
+  console.log(result);
 
   if (result.length === 0) {
-    return c.json({ msg: "No transactions found for this user" }, 404);
+    return c.json({ msg: "No transactions found for this user" });
   }
-  const { amount, date, status } = result[0];
-  const finalAmount = amount / 100;
-  return c.json({
-    finalAmount,
-    status,
+
+  // [{},{}]
+  const extractedValues = result.map(({ amount, date, status, type }) => ({
+    amount: amount / 100,
     date,
+    status,
+    type,
+  }));
+  return c.json({
+    extractedValues,
   });
 });
