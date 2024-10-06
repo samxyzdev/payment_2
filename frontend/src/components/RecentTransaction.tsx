@@ -34,6 +34,8 @@ export const RecentTransaction = () => {
     }
   }, [jwt]);
 
+  console.log(backendData);
+
   return (
     <div>
       <CardData backendData={backendData} />
@@ -43,6 +45,9 @@ export const RecentTransaction = () => {
 
 function CardData({ backendData }: any) {
   if (!backendData) return null;
+  // check if backendData is an array
+  const transactions = Array.isArray(backendData) ? backendData : [backendData];
+  // ^ The Array.isArray() static method determines whether the passed value is an Array
   return (
     <div>
       <Card>
@@ -53,7 +58,9 @@ function CardData({ backendData }: any) {
         <CardContent>
           <Table>
             <TableCaption>
-              {backendData.status ? "" : backendData.msg}
+              {transactions.length
+                ? backendData.msg
+                : "No transactions available"}
             </TableCaption>
             {/* <TableCaption>A list of your recent invoices.</TableCaption> */}
             <TableHeader>
@@ -65,16 +72,18 @@ function CardData({ backendData }: any) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">
-                  {backendData.date ? backendData.date.split("T")[0] : ""}
-                </TableCell>
-                <TableCell>{backendData.status}</TableCell>
-                <TableCell>{backendData.type || ""}</TableCell>
-                <TableCell className="text-right">
-                  {backendData.finalAmount || ""}
-                </TableCell>
-              </TableRow>
+              {transactions.map((transaction: any, index: number) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">
+                    {transaction.date ? transaction.date.split("T")[0] : ""}
+                  </TableCell>
+                  <TableCell>{transaction.status}</TableCell>
+                  <TableCell>{transaction.type || ""}</TableCell>
+                  <TableCell className="text-right">
+                    {transaction.finalAmount || ""}
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </CardContent>
