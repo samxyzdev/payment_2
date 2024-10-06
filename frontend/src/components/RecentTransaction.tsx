@@ -1,11 +1,4 @@
-// import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -20,7 +13,6 @@ import {
 
 export const RecentTransaction = () => {
   const [backendData, setBackendData] = useState(null);
-  const [error, setError] = useState("");
   const jwt = localStorage.getItem("token");
 
   useEffect(() => {
@@ -35,20 +27,12 @@ export const RecentTransaction = () => {
           setBackendData(result.data);
         })
         .catch((err) => {
-          setError("Failed to load backendData");
+          console.log(err);
         });
     } else {
-      setError("JWT token is missing");
+      console.log("Jwt toke is missing");
     }
   }, [jwt]);
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!backendData) {
-    return <div>Loading....</div>;
-  }
 
   return (
     <div>
@@ -64,11 +48,14 @@ function CardData({ backendData }: any) {
       <Card>
         <CardHeader>
           <CardTitle>Recent Transactions</CardTitle>
-          <CardDescription>You have 3 transactions this month.</CardDescription>
+          {/* <CardDescription>You have 3 transactions this month.</CardDescription> */}
         </CardHeader>
         <CardContent>
           <Table>
-            <TableCaption>A list of your recent invoices.</TableCaption>
+            <TableCaption>
+              {backendData.status ? "" : backendData.msg}
+            </TableCaption>
+            {/* <TableCaption>A list of your recent invoices.</TableCaption> */}
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[100px]">Date</TableHead>
@@ -82,10 +69,10 @@ function CardData({ backendData }: any) {
                 <TableCell className="font-medium">
                   {backendData.date ? backendData.date.split("T")[0] : ""}
                 </TableCell>
-                <TableCell>Paid</TableCell>
-                <TableCell>Credit Card</TableCell>
+                <TableCell>{backendData.status}</TableCell>
+                <TableCell>{backendData.type || ""}</TableCell>
                 <TableCell className="text-right">
-                  {backendData.finalAmount || "N/A"}
+                  {backendData.finalAmount || ""}
                 </TableCell>
               </TableRow>
             </TableBody>

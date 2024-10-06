@@ -10,10 +10,15 @@ import {
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+// Define the shape of the balance data
+interface BalanceData {
+  msg: {
+    userBalance: number;
+  };
+}
+
 export const BalanceCard = () => {
-  const [balance, setBalance] = useState(null); // Initialize balance as null
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(""); // Error state
+  const [balance, setBalance] = useState<BalanceData | null>(null); // Initialize balance as null
   const jwt = localStorage.getItem("token");
 
   useEffect(() => {
@@ -26,25 +31,15 @@ export const BalanceCard = () => {
         })
         .then((result) => {
           setBalance(result.data);
-          setLoading(false);
+          console.log(result.data);
         })
         .catch((err) => {
-          setError("Failed to load balance");
-          setLoading(false);
+          console.log(`Error while ${err}`);
         });
     } else {
-      setError("No token found");
-      setLoading(false);
+      console.log("There is now JWT in localStorage");
     }
   }, [jwt]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
 
   return (
     <div>
@@ -55,9 +50,7 @@ export const BalanceCard = () => {
         </CardHeader>
         <CardContent>
           <div className="text-4xl font-bold">
-            {balance && balance.msg && balance.msg[0].userBalance !== undefined
-              ? `₹.${balance.msg[0].userBalance.toFixed(2)}`
-              : "Balance unavailable"}
+            ₹.{balance ? balance.msg.userBalance.toFixed(2) : "Loding..."}
           </div>
           <div className="mt-4 flex space-x-4">
             <Button>
