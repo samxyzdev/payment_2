@@ -51,12 +51,11 @@ paymentRouter.get("/balance", async (c) => {
     .from(schema.balance)
     .where(eq(schema.balance.userId, userId));
 
-  // console.log(balance);
+  const finaleBalance = balance[0];
 
-  const finalBalance = balance[0];
-
+  // Only Sending the latest Balance
   return c.json({
-    msg: finalBalance,
+    msg: finaleBalance,
   });
 });
 
@@ -190,6 +189,8 @@ paymentRouter.get("/status", async (c) => {
     status,
     type,
   }));
+  console.log("Hello" + extractedValues);
+
   return c.json({
     extractedValues,
   });
