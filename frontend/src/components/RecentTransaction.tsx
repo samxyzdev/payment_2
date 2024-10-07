@@ -45,16 +45,9 @@ export const RecentTransaction = () => {
 
 function CardData({ backendData }: any) {
   if (!backendData) return null;
-  // check if backendData is an array
+  const latestTransactions = backendData.extractedValues.slice(-10).reverse();
+  console.log(latestTransactions);
 
-  // console.log(backendData);
-
-  // const transactions = Array.isArray(backendData) ? backendData : [backendData];
-  // console.log(transactions);
-
-  // console.log(transactions[0].extractedValues[0]);
-
-  // ^ The Array.isArray() static method determines whether the passed value is an Array
   return (
     <div>
       <Card>
@@ -65,7 +58,7 @@ function CardData({ backendData }: any) {
         <CardContent>
           <Table>
             <TableCaption>
-              {backendData.length
+              {latestTransactions.length
                 ? backendData.msg
                 : "No transactions available"}
             </TableCaption>
@@ -79,20 +72,18 @@ function CardData({ backendData }: any) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {backendData.extractedValues.map(
-                (transaction: any, index: number) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">
-                      {transaction.date ? transaction.date.split("T")[0] : ""}
-                    </TableCell>
-                    <TableCell>{transaction.status}</TableCell>
-                    <TableCell>{transaction.type || ""}</TableCell>
-                    <TableCell className="text-right">
-                      {transaction.amount || ""}
-                    </TableCell>
-                  </TableRow>
-                )
-              )}
+              {latestTransactions.map((transaction: any, index: number) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">
+                    {transaction.date ? transaction.date.split("T")[0] : ""}
+                  </TableCell>
+                  <TableCell>{transaction.status}</TableCell>
+                  <TableCell>{transaction.type || ""}</TableCell>
+                  <TableCell className="text-right">
+                    {transaction.amount || ""}
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </CardContent>
