@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -53,7 +59,7 @@ function CardData({ backendData }: any) {
       <Card>
         <CardHeader>
           <CardTitle>Recent Transactions</CardTitle>
-          {/* <CardDescription>You have 3 transactions this month.</CardDescription> */}
+          <CardDescription>Your last 10 transaction.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
