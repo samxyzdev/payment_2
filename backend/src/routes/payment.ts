@@ -5,7 +5,7 @@ import * as schema from "../db/schema";
 import { eq } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import { p2pTransferSchema, onramp } from "../db/schema";
-
+import { z } from "zod";
 export const paymentRouter = new Hono<{
   Variables: {
     userId: number;
@@ -59,10 +59,6 @@ paymentRouter.get("/balance", async (c) => {
   });
 });
 
-const p2pSchema = p2pTransferSchema.omit({
-  id: true,
-});
-
 const onrampSchema = onramp.omit({
   id: true,
   token: true,
@@ -86,10 +82,24 @@ paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
     amount: data.amount * 100,
     type: "Credit",
   });
+  console.log("HEllo from onramp");
+
   return c.json({
     msg: "Done",
   });
 });
+
+// recepitn email
+// amount
+const p2pSchema = p2pTransferSchema
+  .omit({
+    id: true,
+    fromUserId: true,
+    toUserId: true,
+  })
+  .extend({
+    email: z.string().email(),
+  });
 
 paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
   const data = c.req.valid("json");
@@ -97,6 +107,14 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
+  // get the userId from email
+  const getUserIdFromEmailBackend = await db
+    .select() // { id: schema.users.id } i am not doing this here because it taking more and in the end i have extract the userId.
+    .from(schema.users)
+    .where(eq(schema.users.email, data.email));
+  // extractin userId
+  const extractedUserId = getUserIdFromEmailBackend[0].id;
+  // checking if user exits in our database
   const checkSenderUser = await db
     .select()
     .from(schema.users)
@@ -109,11 +127,42 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
       411
     );
   }
-  const senderUserBalance = await db
-    .select()
-    .from(schema.balance)
-    .where(eq(schema.users.id, userId));
-  if (senderUserBalance[0].amount < data.amount) {
+  // checker user balance of sender
+  let senderUserBalance;
+  try {
+    senderUserBalance = await db
+      .select()
+      .from(schema.balance)
+      .where(eq(schema.balance.id, userId));
+
+    console.log("Sender User Balance:", senderUserBalance);
+  } catch (error) {
+    console.log(error);
+    return c.json(
+      {
+        msg: "An error occurred while checking balance",
+      },
+      500
+    );
+  }
+  if (!senderUserBalance || senderUserBalance.length === 0) {
+    return c.json(
+      {
+        msg: "No balance found for this user",
+      },
+      404
+    );
+  }
+  const balanceAmount = senderUserBalance[0].amount;
+  if (balanceAmount === undefined) {
+    return c.json(
+      {
+        msg: "Balance amount is not available",
+      },
+      500
+    );
+  }
+  if (balanceAmount < data.amount) {
     return c.json(
       {
         msg: "You do not have enough money to send",
@@ -121,10 +170,16 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
       411
     );
   }
-  const checkReceiverUser = await db
-    .select()
-    .from(schema.users)
-    .where(eq(schema.users.id, data.toUserId));
+  // checking if receipent exist in our db
+  let checkReceiverUser;
+  try {
+    checkReceiverUser = await db
+      .select()
+      .from(schema.users)
+      .where(eq(schema.users.id, extractedUserId));
+  } catch (error) {
+    console.log(error);
+  }
   if (!checkReceiverUser) {
     return c.json(
       {
@@ -137,24 +192,66 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
   if (isNaN(senderAmount)) {
     return c.json({ msg: "Invalid sender balance" }, 500);
   }
-  if (isNaN(data.amount) || isNaN(data.toUserId)) {
+  if (isNaN(data.amount) || isNaN(extractedUserId)) {
     return c.json({ msg: "Invalid transfer data" }, 400);
   }
-
+  // decreasing sender balance and updating receipetn balance
   await db.transaction(async (tx) => {
-    await tx
-      .update(schema.balance)
-      .set({ amount: Number(schema.balance.amount) - data.amount })
+    // Get the current balance of sender before updating
+    const currentBalance = await tx
+      .select()
+      .from(schema.balance)
       .where(eq(schema.balance.userId, userId));
+    // First update: Subtract amount
+    const newBalance = Number(currentBalance[0].amount) - data.amount;
+    // Check for NaN before updating
+    if (isNaN(newBalance)) {
+      console.error(
+        "Invalid new balance calculated. Current Balance:",
+        currentBalance[0].amount,
+        "Data Amount:",
+        data.amount
+      );
+      throw new Error("Invalid balance calculation.");
+    }
     await tx
       .update(schema.balance)
-      .set({ amount: Number(schema.balance.amount) + data.amount })
-      .where(eq(schema.balance.userId, Number(data.toUserId)));
+      .set({ amount: newBalance })
+      .where(eq(schema.balance.userId, userId));
+    // Second update: Add amount
+    const currentBalanceTo = await tx
+      .select()
+      .from(schema.balance)
+      .where(eq(schema.balance.userId, Number(extractedUserId)));
+    // Second update: Add amount
+    const newBalanceTo = Number(currentBalanceTo[0].amount) + data.amount;
+    // Check for NaN before updating
+    if (isNaN(newBalanceTo)) {
+      console.error(
+        "Invalid new balance calculated for recipient. Current Balance:",
+        currentBalanceTo[0].amount,
+        "Data Amount:",
+        data.amount
+      );
+      throw new Error("Invalid balance calculation.");
+    }
+
+    await tx
+      .update(schema.balance)
+      .set({ amount: newBalanceTo })
+      .where(eq(schema.balance.userId, Number(extractedUserId)));
+
+    // Insert p2p transfer
     await tx.insert(schema.p2pTransfer).values({
       fromUserId: userId,
-      toUserId: data.toUserId,
+      toUserId: extractedUserId,
       amount: data.amount,
     });
+  });
+  console.log("Form p2p transfer transtion success");
+
+  return c.json({
+    msg: "Your p2p transaction got succesfull",
   });
 });
 
@@ -176,7 +273,7 @@ paymentRouter.get("/status", async (c) => {
     })
     .from(schema.onRampTransaction)
     .where(eq(schema.onRampTransaction.userId, userId));
-  console.log(result);
+  // console.log(result);
 
   if (result.length === 0) {
     return c.json({ msg: "No transactions found for this user" });
@@ -189,7 +286,7 @@ paymentRouter.get("/status", async (c) => {
     status,
     type,
   }));
-  console.log("Hello" + extractedValues);
+  console.log(extractedValues);
 
   return c.json({
     extractedValues,
