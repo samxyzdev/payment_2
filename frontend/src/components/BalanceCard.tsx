@@ -148,6 +148,29 @@ function AddMoneyCard({ setActiveComponent }: any) {
 
 function SendMoneyCard({ setActiveComponent }: any) {
   const [amount, setAmount] = useState(0);
+  const [email, setEmail] = useState("");
+  const jwt = localStorage.getItem("token");
+
+  async function handleSendMoneyRequest() {
+    if (jwt) {
+      try {
+        const backendData = await axios.post(
+          "http://localhost:3000/api/v1/payment/p2ptransfer",
+          { email: email, amount: amount },
+          {
+            headers: {
+              Authorization: `Bearer ${jwt}`,
+            },
+          }
+        );
+        console.log(backendData.data);
+      } catch (err) {
+        console.error("Error adding money:", err);
+      }
+    } else {
+      console.log("JWT not found");
+    }
+  }
 
   return (
     <div>
@@ -163,7 +186,7 @@ function SendMoneyCard({ setActiveComponent }: any) {
             className="mb-4"
             type="email" // Change "amount" to "number"
             placeholder="Enter the recepient email"
-            onChange={(e) => setAmount(Number(e.target.value))}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <Input
             type="number" // Change "amount" to "number"
@@ -171,7 +194,7 @@ function SendMoneyCard({ setActiveComponent }: any) {
             onChange={(e) => setAmount(Number(e.target.value))}
           />
           <div className="flex justify-center pt-4">
-            <Button>
+            <Button onClick={handleSendMoneyRequest}>
               <Send className="mr-2 h-4 w-4" /> Send
             </Button>
           </div>

@@ -50,8 +50,9 @@ export const RecentTransaction = () => {
 };
 
 function CardData({ backendData }: any) {
-  if (!backendData) return null;
+  if (!backendData || !backendData.extractedValues) return null; // Check if extractedValues exists
   const latestTransactions = backendData.extractedValues.slice(-10).reverse();
+
   console.log(latestTransactions);
 
   return (
