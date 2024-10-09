@@ -8,7 +8,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import { nan, nullable, z } from "zod";
 
 export const onRampStatusEnum = pgEnum("onramp", [
   "Success",
@@ -70,6 +70,16 @@ export const p2pTransfer = pgTable("p2pTransfer", {
   toUserId: integer("to_user_id")
     .references(() => users.id)
     .notNull(),
+  type: typeEnum("type"),
+});
+
+export const transactionHistory = pgTable("transactionHistory", {
+  id: serial("id").primaryKey(),
+  status: onRampStatusEnum("onramp"),
+  type: typeEnum("type"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  amount: integer("amount").notNull(),
+  userId: integer("user_id").references(() => users.id),
 });
 
 // Schema for inserting a user - can be used to validate API requests

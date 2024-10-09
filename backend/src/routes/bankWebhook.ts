@@ -46,8 +46,13 @@ bankWebhook.post(
 
         await tx
           .update(schema.onRampTransaction)
-          .set({ status: "success" })
+          .set({ status: "Success" })
           .where(eq(schema.onRampTransaction.userId, data.userId));
+        // update it into transaction history
+        await tx
+          .update(schema.transactionHistory)
+          .set({ status: "Success" })
+          .where(eq(schema.transactionHistory.userId, data.userId));
       });
     } catch (e) {
       console.error(e);

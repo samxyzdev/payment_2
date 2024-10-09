@@ -1,0 +1,1 @@
+ALTER TABLE "p2pTransfer" ADD COLUMN "type" "type";

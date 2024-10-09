@@ -20,8 +20,6 @@ paymentRouter.use("/*", async (c, next) => {
   const token = authHeader.split(" ")[1];
   try {
     const user = await verify(token, process.env.JWT_SECRET || "");
-    // console.log(user);
-
     if (user) {
       c.set("userId", user.id as number);
       await next();
@@ -45,15 +43,11 @@ paymentRouter.get("/balance", async (c) => {
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
-  // console.log("in Balanced router User ID:", userId);
   const balance = await db
     .select({ userBalance: schema.balance.amount })
     .from(schema.balance)
     .where(eq(schema.balance.userId, userId));
-
   const finaleBalance = balance[0];
-
-  // Only Sending the latest Balance
   return c.json({
     msg: finaleBalance,
   });
@@ -73,7 +67,8 @@ paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
   const token = (Math.random() * 1000).toString();
-  console.log(token); // this is for generating token
+  console.log(token);
+
   await db.insert(schema.onRampTransaction).values({
     provider: data.provider,
     status: "Processing",
@@ -82,8 +77,13 @@ paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
     amount: data.amount * 100,
     type: "Credit",
   });
-  console.log("HEllo from onramp");
-
+  // insert into transaciton history
+  await db.insert(schema.transactionHistory).values({
+    status: "Processing",
+    type: "Credit",
+    amount: data.amount * 100,
+    userId: userId,
+  });
   return c.json({
     msg: "Done",
   });
@@ -107,9 +107,10 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
+
   // get the userId from email
   const getUserIdFromEmailBackend = await db
-    .select() // { id: schema.users.id } i am not doing this here because it taking more and in the end i have extract the userId.
+    .select() // { id: schema.users.id } i am not doing this here because it taking more time and in the end i have extract the userId.
     .from(schema.users)
     .where(eq(schema.users.email, data.email));
   // extractin userId
@@ -134,10 +135,7 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
       .select()
       .from(schema.balance)
       .where(eq(schema.balance.id, userId));
-
-    console.log("Sender User Balance:", senderUserBalance);
   } catch (error) {
-    console.log(error);
     return c.json(
       {
         msg: "An error occurred while checking balance",
@@ -247,9 +245,17 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
       toUserId: extractedUserId,
       amount: data.amount,
     });
-  });
-  console.log("Form p2p transfer transtion success");
+    // Insert into transacitonHistory
+    console.log("inserting into inset");
 
+    await tx.insert(schema.transactionHistory).values({
+      status: "Success",
+      type: "Debit",
+      amount: data.amount,
+      userId: userId,
+    });
+    console.log("insert complete");
+  });
   return c.json({
     msg: "Your p2p transaction got succesfull",
   });
@@ -257,24 +263,18 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
 
 paymentRouter.get("/status", async (c) => {
   const userId = c.get("userId").id;
-  console.log("in status routee User ID:", userId);
-
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
-  // console.log("HELLO2");
-
   const result = await db
     .select({
-      amount: schema.onRampTransaction.amount,
-      date: schema.onRampTransaction.createdAt,
-      status: schema.onRampTransaction.status,
-      type: schema.onRampTransaction.type,
+      amount: schema.transactionHistory.amount,
+      date: schema.transactionHistory.createdAt,
+      status: schema.transactionHistory.status,
+      type: schema.transactionHistory.type,
     })
-    .from(schema.onRampTransaction)
-    .where(eq(schema.onRampTransaction.userId, userId));
-  // console.log(result);
-
+    .from(schema.transactionHistory)
+    .where(eq(schema.transactionHistory.userId, userId));
   if (result.length === 0) {
     return c.json({ msg: "No transactions found for this user" });
   }
@@ -286,8 +286,6 @@ paymentRouter.get("/status", async (c) => {
     status,
     type,
   }));
-  console.log(extractedValues);
-
   return c.json({
     extractedValues,
   });
