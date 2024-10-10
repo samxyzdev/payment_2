@@ -281,7 +281,7 @@ paymentRouter.get("/status", async (c) => {
 
   // [{},{}]
   const extractedValues = result.map(({ amount, date, status, type }) => ({
-    amount: amount / 100,
+    amount: type === "Debit" ? amount : amount / 100, // conditionally set amount
     date,
     status,
     type,
