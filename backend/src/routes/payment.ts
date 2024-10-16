@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import { p2pTransferSchema, onramp } from "../db/schema";
 import { z } from "zod";
+import { produceMessatge } from "../kafka/kafka";
 export const paymentRouter = new Hono<{
   Variables: {
     userId: number;
@@ -84,8 +85,22 @@ paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
     amount: data.amount * 100,
     userId: userId,
   });
+  console.log("Publishing the data to kafka from onramp route");
+
+  // public the transaction request to  kafka
+  const transaciton = JSON.stringify({
+    token,
+    userId,
+    amount: data.amount,
+  });
+  try {
+    await produceMessatge("onramp", transaciton);
+  } catch (error) {
+    console.error("Failed to send message to kafka", error);
+    return c.json({ msg: "Error processing the transaciton" }, 500);
+  }
   return c.json({
-    msg: "Done",
+    msg: "Transaction is being processed",
   });
 });
 

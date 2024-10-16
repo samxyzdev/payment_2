@@ -5,6 +5,7 @@ import { db } from "../db/index";
 import * as schema from "../db/schema";
 import { eq } from "drizzle-orm";
 import { sign } from "hono/jwt";
+import { existingUserCheck } from "../utils/existingUserCheck";
 
 export const userRouter = new Hono();
 
