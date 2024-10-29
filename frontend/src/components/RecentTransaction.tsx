@@ -16,9 +16,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { RenderingIndianRupee } from "./RenderingIndianRupee";
+
+type Transaction = {
+  amount: number;
+  date: string;
+  status: string;
+  type: "Debit" | "Credit";
+};
 
 export const RecentTransaction = () => {
-  const [backendData, setBackendData] = useState(null);
+  const [backendData, setBackendData] = useState<{
+    extractedValues: Transaction[];
+    msg: string;
+  } | null>(null);
   const jwt = localStorage.getItem("token");
 
   useEffect(() => {
@@ -49,12 +60,16 @@ export const RecentTransaction = () => {
   );
 };
 
-function CardData({ backendData }: any) {
+// 1.Its not showind recentraction table when bakcned send null
+// 2.
+
+function CardData({
+  backendData,
+}: {
+  backendData: { extractedValues: Transaction[]; msg: string } | null;
+}) {
   if (!backendData || !backendData.extractedValues) return null; // Check if extractedValues exists
   const latestTransactions = backendData.extractedValues.slice(-10).reverse();
-
-  console.log(latestTransactions);
-
   return (
     <div>
       <Card>
@@ -79,18 +94,20 @@ function CardData({ backendData }: any) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {latestTransactions.map((transaction: any, index: number) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">
-                    {transaction.date ? transaction.date.split("T")[0] : ""}
-                  </TableCell>
-                  <TableCell>{transaction.status}</TableCell>
-                  <TableCell>{transaction.type || ""}</TableCell>
-                  <TableCell className="text-right">
-                    {transaction.amount || ""}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {latestTransactions.map(
+                (transaction: Transaction, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">
+                      {transaction.date ? transaction.date.split("T")[0] : ""}
+                    </TableCell>
+                    <TableCell>{transaction.status}</TableCell>
+                    <TableCell>{transaction.type || ""}</TableCell>
+                    <TableCell className="text-right">
+                      {RenderingIndianRupee(transaction.amount) || ""}
+                    </TableCell>
+                  </TableRow>
+                )
+              )}
             </TableBody>
           </Table>
         </CardContent>

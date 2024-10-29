@@ -1,15 +1,33 @@
 import { Bell } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode, JwtPayload } from "jwt-decode";
+
+// Define a custom interface for your token's structure
+interface MyTokenPayload extends JwtPayload {
+  id: {
+    name: string;
+  };
+}
 
 export const AppBar = () => {
   const token = localStorage.getItem("token");
-  const decodedToken = jwtDecode(token || "");
-  const name = decodedToken.id.name;
-
-  const nameParts = name.split(" ").filter((part) => part.length > 0);
-  const initials = nameParts.map((part) => part[0].toUpperCase()).join("");
+  let name = "User";
+  let initials = "U";
+  if (token) {
+    try {
+      const decodedToken = jwtDecode<MyTokenPayload>(token);
+      name = decodedToken.id?.name || name;
+      const nameParts = name
+        .split(" ")
+        .filter((part: string) => part.length > 0);
+      initials = nameParts
+        .map((part: string) => part[0].toUpperCase())
+        .join("");
+    } catch (error) {
+      console.error("Invalid token", error);
+    }
+  }
   return (
     <div>
       <header className="flex justify-between items-center mb-6">

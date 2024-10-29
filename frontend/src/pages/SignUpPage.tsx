@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 
-export default function SignUpPage() {
+export function SignUpPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -33,23 +33,19 @@ export default function SignUpPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-
     try {
       const response = await axios.post(
         "http://localhost:3000/api/v1/user/signup",
         formData
       );
-      if (response.data) {
+      if (response.data && response.data.jwtToken) {
+        localStorage.setItem("token", response.data.jwtToken);
         navigate("/dashboard");
       } else {
         setError("Error while signing up, please try again.");
       }
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.msg ||
-        "Error while signing up, please check your network.";
-      setError(errorMessage);
+      console.log(`Error while signuing up ${err}`);
     } finally {
       setLoading(false);
     }

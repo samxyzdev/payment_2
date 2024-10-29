@@ -1,9 +1,9 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-import SignUpPage from "./components/v0singup";
-import SignIpPage from "./components/v0signin";
 import { Suspense } from "react";
 import { Loading } from "./components/Loading";
+import { SignUpPage } from "./pages/SignUpPage";
+import { SignInPage } from "./pages/SignInPage";
+import { Dashboard } from "./pages/DashboardPage";
 
 export default function App() {
   return (
@@ -21,7 +21,7 @@ function AuthApp() {
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/signin" element={<SignIpPage />} />
+        <Route path="/signin" element={<SignInPage />} />
       </Routes>
     </BrowserRouter>
   );
