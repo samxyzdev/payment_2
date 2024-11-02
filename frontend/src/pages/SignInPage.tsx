@@ -37,10 +37,8 @@ export function SignInPage() {
         "http://localhost:3000/api/v1/user/signin",
         formData
       );
-      console.log(response.data.msg);
-
-      if (response.data && response.data.msg) {
-        localStorage.setItem("token", response.data.msg);
+      if (response.data && response.data.jwtToken) {
+        localStorage.setItem("token", response.data.jwtToken);
         navigate("/dashboard");
       } else {
         setError("Error while signing up, please try again.");
