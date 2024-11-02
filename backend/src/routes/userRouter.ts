@@ -23,7 +23,7 @@ const signupSchema = insertUserSchema.omit({
 userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
   const data = c.req.valid("json");
   const hashedpassword = await Bun.password.hash(data.password);
-  let newUserId: newUserIdSchema | null = null;
+  let newUserId: number | null = null;
   // Checking Existing User --------------------
   try {
     const existingUser = await db
@@ -31,7 +31,6 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
       .from(schema.users)
       .where(eq(schema.users.email, data.email));
     console.log("Inside the existing user");
-
     if (existingUser.length > 0) {
       return c.json(
         {
@@ -63,7 +62,7 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
         })
         .returning();
       //---------------------------
-      newUserId = newUser;
+      newUserId = newUser.id;
       //-----------------------------------------
       await tx.insert(schema.balance).values({
         amount: 0,
@@ -118,7 +117,7 @@ userRouter.post("/signin", zValidator("json", signinSchema), async (c) => {
     if (await Bun.password.verify(data.password, existingUser[0].password)) {
       const token = await sign(existingUser[0], process.env.JWT_SECRET || "");
       return c.json({
-        msg: token,
+        jwtToken: token,
       });
     }
   } catch (e) {
