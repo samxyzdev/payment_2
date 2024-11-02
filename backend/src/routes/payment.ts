@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import { p2pTransferSchema, onramp } from "../db/schema";
 import { z } from "zod";
-import { produceMessatge } from "../kafka/kafka";
+import { produceMessage } from "../kafka/kafka";
 export const paymentRouter = new Hono<{
   Variables: {
     userId: number;
@@ -21,6 +21,7 @@ paymentRouter.use("/*", async (c, next) => {
   const token = authHeader.split(" ")[1];
   try {
     const user = await verify(token, process.env.JWT_SECRET || "");
+    console.log(user.id);
     if (user) {
       c.set("userId", user.id as number);
       await next();
@@ -40,7 +41,8 @@ paymentRouter.use("/*", async (c, next) => {
 });
 
 paymentRouter.get("/balance", async (c) => {
-  const userId = c.get("userId").id;
+  const userId = c.get("userId"); // Here when signining c.get("userId") have to do this but signup c.get("userId").id have to do this
+  console.log(userId);
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
@@ -86,7 +88,6 @@ paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
     userId: userId,
   });
   console.log("Publishing the data to kafka from onramp route");
-
   // public the transaction request to  kafka
   const transaciton = JSON.stringify({
     token,
@@ -94,7 +95,7 @@ paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
     amount: data.amount,
   });
   try {
-    await produceMessatge("onramp", transaciton);
+    await produceMessage("onramp", transaciton);
   } catch (error) {
     console.error("Failed to send message to kafka", error);
     return c.json({ msg: "Error processing the transaciton" }, 500);

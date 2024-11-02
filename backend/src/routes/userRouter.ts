@@ -30,6 +30,7 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
       .select()
       .from(schema.users)
       .where(eq(schema.users.email, data.email));
+    console.log("Inside the existing user");
 
     if (existingUser.length > 0) {
       return c.json(
@@ -68,6 +69,7 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
         amount: 0,
         userId: newUser.id,
       });
+      console.log("INside creating new user");
     });
     //-----------------------------------------
     const jwtSecret = process.env.JWT_SECRET;
@@ -77,6 +79,7 @@ userRouter.post("/signup", zValidator("json", signupSchema), async (c) => {
     const token = await sign({ id: newUserId }, jwtSecret);
     //-------------------------------------
     console.log("HWLLO FROM EERROR");
+    console.log(token);
 
     return c.json({
       jwtToken: token,

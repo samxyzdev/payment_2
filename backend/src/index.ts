@@ -4,6 +4,7 @@ import { paymentRouter } from "./routes/payment";
 import { bankWebhook } from "./routes/bankWebhook";
 import { cors } from "hono/cors";
 import { consumeMessages } from "./kafka/kafka";
+import { WebSocket } from "ws";
 
 const app = new Hono();
 

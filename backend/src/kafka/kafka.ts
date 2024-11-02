@@ -9,7 +9,7 @@ const kafka = new Kafka({
 const producer = kafka.producer();
 const consumer = kafka.consumer({ groupId: "math-group" });
 
-export async function produceMessatge(topic: any, message: any) {
+export async function produceMessage(topic: any, message: any) {
   await producer.connect();
   await producer.send({
     topic: topic,
@@ -28,16 +28,19 @@ export async function consumeMessages(topic: any) {
     // arrow function
     eachMessage: async ({ topic, partition, message }: any) => {
       const messageValue = JSON.parse(message.value.toString()); // parse the string back to and object
-      const result = callBankWebhook(messageValue);
-      console.log(`Processed result: ${result}`);
+      console.log(messageValue);
+      console.log("KAISE HO!!!!!!");
+      const result = await callBankWebhook(messageValue);
+      console.log("kya haal");
+      console.log(result);
     },
   });
 }
 
 async function callBankWebhook(data: any) {
   console.log("Inside the call bankwebhook form kafka.ts");
-
-  const webhookUrl = "https://localhost:3000/api/v1/verify/bankwebhook"; // Replace with your actual bank webhook URL
+  console.log(data);
+  const webhookUrl = "http://localhost:3000/api/v1/verify/bankwebhook"; // Replace with your actual bank webhook URL
   try {
     const response = await axios.post(webhookUrl, {
       ...data, // token , userId , amount
