@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 
@@ -117,7 +117,9 @@ export function SignUpPage() {
           </Button>
           <p className="text-sm text-center text-gray-600">
             Already have an account?{" "}
-            {/* <Link href="/signin" className="text-blue-600 hover:underline">Sign In</Link> */}
+            <Link to="/signin" className="text-blue-600 hover:underline">
+              Sign In
+            </Link>
           </p>
         </CardFooter>
       </Card>
