@@ -11,11 +11,15 @@ interface AddMoneyCardProps {
 
 export function AddMoneyCard({ setActiveComponent }: AddMoneyCardProps) {
   const [amount, setAmount] = useState<number>(0);
+  const [buttonText, setButtonText] = useState("Add");
+  const [loading, setLoading] = useState(false);
   const jwt = localStorage.getItem("token");
 
   async function handleAddMoneyRequest() {
+    setLoading(true);
     if (jwt) {
       try {
+        console.log("hello how are you");
         const backendData = await axios.post(
           "http://localhost:3000/api/v1/payment/onramp",
           { provider: "HDFC BANK", amount },
@@ -25,6 +29,9 @@ export function AddMoneyCard({ setActiveComponent }: AddMoneyCardProps) {
             },
           }
         );
+        console.log("hello how are you 888888");
+        setLoading(false);
+        setButtonText("Added");
         console.log(backendData.data);
       } catch (err) {
         console.error("Error adding money:", err);
@@ -53,7 +60,8 @@ export function AddMoneyCard({ setActiveComponent }: AddMoneyCardProps) {
           />
           <div className="flex justify-center pt-4">
             <Button onClick={handleAddMoneyRequest}>
-              <Send className="mr-2 h-4 w-4" /> Add
+              <Send className="mr-2 h-4 w-4" />{" "}
+              {loading ? "Adding..." : buttonText}
             </Button>
           </div>
         </CardContent>
