@@ -5,19 +5,21 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 
 // Define a custom interface for your token's structure
 interface MyTokenPayload extends JwtPayload {
-  id: {
-    name: string;
-  };
+  name: string;
 }
 
 export const AppBar = () => {
   const token = localStorage.getItem("token");
+  console.log(token);
   let name = "User";
   let initials = "U";
   if (token) {
     try {
       const decodedToken = jwtDecode<MyTokenPayload>(token);
-      name = decodedToken.id?.name || name;
+      console.log(decodedToken);
+      name = decodedToken.name || name;
+      console.log(name);
+
       const nameParts = name
         .split(" ")
         .filter((part: string) => part.length > 0);

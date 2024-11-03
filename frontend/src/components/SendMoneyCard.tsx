@@ -15,10 +15,13 @@ export function SendMoneyCard({ setActiveComponent }: SendMoneyCardProps) {
   // State for amount and email
   const [amount, setAmount] = useState<number>(0);
   const [email, setEmail] = useState<string>("");
+  const [buttonText, setButtonText] = useState("Send");
+  const [loading, setLoading] = useState(false);
   const jwt = localStorage.getItem("token");
 
   // Async function to handle the money sending request
   async function handleSendMoneyRequest(): Promise<void> {
+    setLoading(true);
     if (jwt) {
       try {
         const backendData = await axios.post(
@@ -30,6 +33,8 @@ export function SendMoneyCard({ setActiveComponent }: SendMoneyCardProps) {
             },
           }
         );
+        setLoading(false);
+        setButtonText("Sended");
         console.log(backendData.data);
       } catch (err) {
         console.error("Error sending money:", err);
@@ -62,7 +67,8 @@ export function SendMoneyCard({ setActiveComponent }: SendMoneyCardProps) {
           />
           <div className="flex justify-center pt-4">
             <Button onClick={handleSendMoneyRequest}>
-              <Send className="mr-2 h-4 w-4" /> Send
+              <Send className="mr-2 h-4 w-4" />{" "}
+              {loading ? "Sending..." : buttonText}
             </Button>
           </div>
         </CardContent>
