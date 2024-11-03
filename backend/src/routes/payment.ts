@@ -89,7 +89,7 @@ const onrampSchema = onramp.omit({
 });
 paymentRouter.post("/onramp", zValidator("json", onrampSchema), async (c) => {
   const data = c.req.valid("json");
-  const userId = c.get("userId").id;
+  const userId = c.get("userId");
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
@@ -143,7 +143,7 @@ const p2pSchema = p2pTransferSchema
 
 paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
   const data = c.req.valid("json");
-  const userId = c.get("userId").id;
+  const userId = c.get("userId");
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
@@ -302,7 +302,7 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
 });
 
 paymentRouter.get("/status", async (c) => {
-  const userId = c.get("userId").id;
+  const userId = c.get("userId");
   if (isNaN(userId)) {
     return c.json({ msg: "Invalid user ID" }, 400);
   }
