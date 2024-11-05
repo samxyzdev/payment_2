@@ -22,25 +22,6 @@ paymentRouter.use("/*", async (c, next) => {
   const token = authHeader.split(" ")[1];
   console.log("Inside the middleware");
   console.log(token);
-
-  // {
-  //   id: {
-  //     id: 17,
-  //     name: "Sameer Ahmed",
-  //     email: "sameer3@gmail.com",
-  //     password: "$argon2id$v=19$m=65536,t=2,p=1$Xi8i5jEb0zmPnDAiHPOiB0JYiPX/HLlZ+mCy/K+nlUs$Y1vdlt5Y3o0EVnrJoPvrjuNqEsoUr5lQufQao4g2jB8",
-  //     createdAt: "2024-11-02T13:28:11.942Z",
-  //   },
-  // }      Getting this object when sign up
-
-  // {
-  //   id: 16,
-  //   name: "Sameer Ahmed",
-  //   email: "sameer2@gmail.com",
-  //   password: "$argon2id$v=19$m=65536,t=2,p=1$nfOhdrvHkfSH6j6o450qPzTumOwtgY0biQIWMmTphXQ$nlBn7q6TS/IU+flQvTEhe3dB9XuEDvAYThCAK+9lxnM",
-  //   createdAt: "2024-11-02T13:26:22.728Z",
-  // }  Getting this object when sign in
-
   try {
     const user = await verify(token, process.env.JWT_SECRET || "");
     console.log(user);
@@ -239,7 +220,8 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
     const currentBalance = await tx
       .select()
       .from(schema.balance)
-      .where(eq(schema.balance.userId, userId));
+      .where(eq(schema.balance.userId, userId))
+      .for("update"); /// this lock the row
     // First update: Subtract amount
     const newBalance = Number(currentBalance[0].amount) - data.amount;
     // Check for NaN before updating
@@ -260,7 +242,8 @@ paymentRouter.post("/p2ptransfer", zValidator("json", p2pSchema), async (c) => {
     const currentBalanceTo = await tx
       .select()
       .from(schema.balance)
-      .where(eq(schema.balance.userId, Number(extractedUserId)));
+      .where(eq(schema.balance.userId, Number(extractedUserId)))
+      .for("update");
     // Second update: Add amount
     const newBalanceTo = Number(currentBalanceTo[0].amount) + data.amount;
     // Check for NaN before updating
